@@ -1,0 +1,16 @@
+{
+ "version": 1,
+ "kdf": {
+  "name": "PBKDF2",
+  "hash": "SHA-256",
+  "iterations": 600000
+ },
+ "users": [
+  {
+   "uid": "58ef10ad0f1cb54d58622a968935edb80bb6a6b2131e83fb2bd4103efb5921d9",
+   "salt": "lVQibV07MQdODJo2qthOHA==",
+   "iv": "TC+ReE88j5wqLBIW",
+   "key": "jqHjeNosZThBdT2VbQmU36MfCwyLIf4ZtxvWO85gkeVPUw1ZdKySEEX1320vkAyL"
+  }
+ ]
+}

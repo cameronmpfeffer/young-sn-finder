@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Young SN Finder</title>
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --night:#141a2e; --night-2:#1f2843; --night-line:#323d5f; --sky:#9fb0d9;
+  --amber:#e8b04b; --paper:#f5f6f8; --ink:#1d2433; --muted:#5d667a; --line:#d9dde5;
+  --focus:#7fb2ff;
+  font-family:"Atkinson Hyperlegible",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16px; line-height:1.45; color:var(--ink);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper)}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+[hidden]{display:none !important}
+
+/* ---------- sign in ---------- */
+#login{min-height:100vh;background:var(--night);color:#e9edf7;display:grid;place-items:center;padding:24px}
+#login form{width:100%;max-width:340px}
+#login h1{font-size:1.75rem;margin:0 0 .2rem;letter-spacing:-.01em}
+#login p.sub{margin:0 0 2rem;color:var(--sky)}
+#login label{display:block;font-size:.9rem;color:var(--sky);margin:0 0 .3rem}
+#login input{width:100%;padding:.7rem .8rem;border-radius:6px;border:1px solid var(--night-line);
+  background:var(--night-2);color:#fff;margin:0 0 1.1rem}
+#login input:focus{border-color:var(--sky)}
+#login button{width:100%;padding:.75rem;border:0;border-radius:6px;background:var(--amber);color:#1c1606;
+  font-weight:700;cursor:pointer}
+#login button[disabled]{opacity:.6;cursor:progress}
+#login .err{min-height:1.4em;margin:.9rem 0 0;color:#ffb4a8}
+#login .note{margin-top:2.2rem;font-size:.85rem;color:#8390b3;max-width:34ch}
+
+/* ---------- app ---------- */
+header{background:var(--night);color:#e9edf7}
+.bar{max-width:1440px;margin:0 auto;padding:14px 20px 0;display:flex;align-items:baseline;gap:16px}
+.bar h1{font-size:1.15rem;margin:0}
+.bar .when{color:var(--sky);font-size:.9rem}
+.bar .spacer{flex:1}
+.linkbtn{background:none;border:0;color:var(--sky);cursor:pointer;padding:4px 2px;text-decoration:underline;
+  text-underline-offset:3px}
+.linkbtn:hover{color:#fff}
+
+.strip-wrap{max-width:1440px;margin:0 auto;padding:12px 20px 0;display:flex;gap:14px;align-items:flex-end}
+.strip{display:flex;gap:4px;overflow-x:auto;flex:1;padding-bottom:0;scrollbar-width:thin}
+.day{flex:0 0 auto;width:58px;border:0;border-radius:8px 8px 0 0;background:transparent;color:#c9d2ea;
+  padding:8px 4px 10px;cursor:pointer;text-align:center;position:relative}
+.day:hover{background:var(--night-2)}
+.day .wd{display:block;font-size:.75rem;color:var(--sky)}
+.day .dn{display:block;font-size:1.25rem;font-weight:700;line-height:1.2}
+.day .n{display:block;margin-top:4px;font-size:.8rem;min-height:1.2em}
+.day.has .n{color:var(--amber);font-weight:700}
+.day.none .n{color:#6c7899}
+.day .pip{position:absolute;left:12px;right:12px;bottom:4px;height:3px;border-radius:2px;background:transparent}
+.day.has .pip{background:var(--amber)}
+.day[aria-current="date"]{background:var(--paper);color:var(--ink)}
+.day[aria-current="date"] .wd{color:var(--muted)}
+.day[aria-current="date"].none .n{color:var(--muted)}
+.day[aria-current="date"].has .n{color:#9a6a00}
+.older{padding-bottom:10px}
+.older select{background:var(--night-2);border:1px solid var(--night-line);color:#e9edf7;border-radius:6px;
+  padding:.4rem .5rem;max-width:12.5rem}
+
+main{max-width:1440px;margin:0 auto;padding:22px 20px 60px}
+.dayhead{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px 18px;margin-bottom:6px}
+.dayhead h2{font-size:1.6rem;margin:0;letter-spacing:-.01em}
+.dayhead .tz{color:var(--muted)}
+.nav{display:flex;gap:6px;margin-left:auto}
+.nav button{border:1px solid var(--line);background:#fff;border-radius:6px;padding:.35rem .7rem;cursor:pointer}
+.nav button[disabled]{opacity:.4;cursor:default}
+.notice{margin:.4rem 0 1rem;color:var(--muted)}
+.runs{list-style:none;padding:0;margin:.6rem 0 1.4rem;color:var(--muted);font-size:.95rem}
+.runs li{padding:.15rem 0}
+.runs b{color:var(--ink)}
+.report{margin:0 0 28px;border:1px solid var(--line);border-radius:8px;background:#fff;overflow:hidden}
+.report .cap{padding:.55rem .9rem;border-bottom:1px solid var(--line);font-size:.9rem;color:var(--muted);
+  display:flex;gap:12px;align-items:baseline}
+.report .cap b{color:var(--ink)}
+.report .cap .spacer{flex:1}
+.report iframe{display:block;width:100%;border:0;min-height:240px;background:#fff}
+.empty{border:1px dashed var(--line);border-radius:8px;padding:28px;color:var(--muted);background:#fff}
+.status{color:var(--muted);padding:40px 0}
+.rules{margin-top:40px;color:var(--muted);font-size:.85rem;max-width:78ch}
+
+@media (max-width:640px){
+  .bar .when{display:none}
+  .older{display:none}
+  .dayhead h2{font-size:1.3rem}
+  .nav{margin-left:0}
+}
+</style>
+</head>
+<body>
+
+<section id="login" hidden>
+  <form id="loginForm" autocomplete="on">
+    <h1>Young SN Finder</h1>
+    <p class="sub">Daily alerts for faint and nearby new transients</p>
+    <label for="u">Username</label>
+    <input id="u" name="username" autocomplete="username" required>
+    <label for="p">Password</label>
+    <input id="p" name="password" type="password" autocomplete="current-password" required>
+    <button id="signin" type="submit">Sign in</button>
+    <p class="err" id="err" role="alert"></p>
+    <p class="note">Reports are encrypted. Your password is checked in this browser and is never sent anywhere.</p>
+  </form>
+</section>
+
+<div id="app" hidden>
+  <header>
+    <div class="bar">
+      <h1>Young SN Finder</h1>
+      <span class="when" id="updated"></span>
+      <span class="spacer"></span>
+      <button class="linkbtn" id="signout" type="button">Sign out</button>
+    </div>
+    <div class="strip-wrap">
+      <nav class="strip" id="strip" aria-label="Recent days"></nav>
+      <div class="older">
+        <select id="older" aria-label="Choose any day"></select>
+      </div>
+    </div>
+  </header>
+  <main id="main"><p class="status">Loading…</p></main>
+</div>
+
+<script>
+"use strict";
+const TZ = "Pacific/Honolulu";
+const enc = new TextEncoder();
+const b64d = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const b64e = u => btoa(String.fromCharCode(...u));
+const hex = buf => [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
+const $ = id => document.getElementById(id);
+let KEY = null, MANIFEST = null, CURRENT = null;
+
+/* ---------- crypto ---------- */
+async function uidOf(salt, username) {
+  const pre = enc.encode("yssf-uid\0"), u = enc.encode(username.trim().toLowerCase());
+  const buf = new Uint8Array(pre.length + salt.length + u.length);
+  buf.set(pre); buf.set(salt, pre.length); buf.set(u, pre.length + salt.length);
+  return hex(await crypto.subtle.digest("SHA-256", buf));
+}
+async function unlock(username, password) {
+  const r = await fetch("keys.json", {cache: "no-cache"});
+  if (!r.ok) throw new Error("The site's key file is missing.");
+  const keys = await r.json();
+  for (const u of keys.users) {
+    const salt = b64d(u.salt);
+    if (await uidOf(salt, username) !== u.uid) continue;
+    const base = await crypto.subtle.importKey("raw", enc.encode(password), "PBKDF2", false, ["deriveKey"]);
+    const kek = await crypto.subtle.deriveKey(
+      {name: "PBKDF2", salt, iterations: keys.kdf.iterations, hash: "SHA-256"},
+      base, {name: "AES-GCM", length: 256}, false, ["decrypt"]);
+    try {
+      return new Uint8Array(await crypto.subtle.decrypt(
+        {name: "AES-GCM", iv: b64d(u.iv), additionalData: enc.encode("yssf-user:" + u.uid)}, kek, b64d(u.key)));
+    } catch (e) { return null; }
+  }
+  return null;
+}
+async function useKey(raw) {
+  KEY = await crypto.subtle.importKey("raw", raw, "AES-GCM", false, ["decrypt"]);
+}
+async function getFile(rel) {
+  const r = await fetch(rel + ".bin", {cache: rel === "manifest" ? "no-cache" : "default"});
+  if (!r.ok) throw new Error("Could not load " + rel + " (HTTP " + r.status + ")");
+  const b = new Uint8Array(await r.arrayBuffer());
+  const pt = await crypto.subtle.decrypt(
+    {name: "AES-GCM", iv: b.slice(0, 12), additionalData: enc.encode(rel)}, KEY, b.slice(12));
+  return new TextDecoder().decode(pt);
+}
+
+/* ---------- dates ---------- */
+const parseDay = d => new Date(d + "T12:00:00Z");
+const fmt = (d, o) => new Intl.DateTimeFormat("en-GB", Object.assign({timeZone: "UTC"}, o)).format(parseDay(d));
+const todayHST = () => new Intl.DateTimeFormat("en-CA", {timeZone: TZ}).format(new Date());
+const plural = (n, w) => n + " " + w + (n === 1 ? "" : "s");
+
+/* ---------- sign in / out ---------- */
+$("loginForm").addEventListener("submit", async ev => {
+  ev.preventDefault();
+  const btn = $("signin"); btn.disabled = true; btn.textContent = "Checking…"; $("err").textContent = "";
+  try {
+    const raw = await unlock($("u").value, $("p").value);
+    if (!raw) { $("err").textContent = "That username and password don't match."; return; }
+    sessionStorage.setItem("yssf-key", b64e(raw));
+    await useKey(raw); $("p").value = "";
+    await start();
+  } catch (e) {
+    $("err").textContent = e.message;
+  } finally { btn.disabled = false; btn.textContent = "Sign in"; }
+});
+$("signout").addEventListener("click", () => {
+  sessionStorage.removeItem("yssf-key"); KEY = null; MANIFEST = null;
+  $("app").hidden = true; $("login").hidden = false; $("main").innerHTML = ""; $("u").focus();
+});
+
+async function start() {
+  MANIFEST = JSON.parse(await getFile("manifest"));
+  $("login").hidden = true; $("app").hidden = false;
+  $("updated").textContent = "Updated " + MANIFEST.generated_utc + " UT";
+  buildNav();
+  const want = location.hash.slice(1);
+  const days = MANIFEST.days.map(d => d.date);
+  show(days.includes(want) ? want : null);
+}
+
+/* ---------- navigation ---------- */
+function buildNav() {
+  const strip = $("strip"); strip.innerHTML = "";
+  for (const d of MANIFEST.days.slice(0, 21)) {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "day " + (d.new ? "has" : "none"); b.dataset.date = d.date;
+    b.innerHTML = `<span class="wd">${fmt(d.date, {weekday: "short"})}</span><span class="dn">${fmt(d.date, {day: "numeric"})}</span>` +
+      `<span class="n">${d.new ? d.new : "–"}</span><span class="pip"></span>`;
+    b.setAttribute("aria-label", fmt(d.date, {weekday: "long", day: "numeric", month: "long"}) + ", " + plural(d.new, "new alert"));
+    b.addEventListener("click", () => show(d.date));
+    strip.appendChild(b);
+  }
+  const sel = $("older"); sel.innerHTML = '<option value="">Any day…</option>';
+  for (const d of MANIFEST.days) {
+    const o = document.createElement("option"); o.value = d.date;
+    o.textContent = d.date + " (" + d.new + ")"; sel.appendChild(o);
+  }
+  sel.onchange = () => { if (sel.value) show(sel.value); };
+}
+window.addEventListener("hashchange", () => {
+  const h = location.hash.slice(1);
+  if (MANIFEST && h && h !== CURRENT && MANIFEST.days.some(d => d.date === h)) show(h);
+});
+
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c])); }
+
+async function show(date) {
+  const main = $("main"), days = MANIFEST.days, today = todayHST();
+  let notice = "";
+  if (!days.length) {
+    main.innerHTML = '<div class="empty">No reports have been published yet. The first one appears after the next daily run.</div>';
+    return;
+  }
+  if (!date) {
+    date = days[0].date;
+    if (date !== today) notice = "No run yet today (" + today + " HST). Showing the most recent day.";
+  }
+  CURRENT = date;
+  if (location.hash.slice(1) !== date) history.replaceState(null, "", "#" + date);
+  for (const b of document.querySelectorAll(".day")) {
+    if (b.dataset.date === date) b.setAttribute("aria-current", "date"); else b.removeAttribute("aria-current");
+  }
+  $("older").value = days.slice(0, 21).some(d => d.date === date) ? "" : date;
+  const i = days.findIndex(d => d.date === date), day = days[i];
+  const title = (date === today ? "Today, " : "") + fmt(date, {weekday: "long", day: "numeric", month: "long", year: "numeric"});
+  const runs = day.runs.map(r => {
+    const bits = [];
+    if (r.checked != null) bits.push(plural(r.checked, "transient") + " checked");
+    bits.push(plural(r.new || 0, "new alert"));
+    if (r.reasons) bits.push(`skipped: ${r.reasons["no host"]} no galaxy within ${MANIFEST.settings.radius_arcmin}′, ` +
+      `${r.reasons["too far"]} beyond ${MANIFEST.settings.max_kpc} kpc, ${r.reasons["magnitude"]} outside the magnitude range`);
+    return `<li>Run at <b>${esc(r.local)} HST</b>: ${bits.map(esc).join("; ")}</li>`;
+  }).join("");
+  main.innerHTML =
+    `<div class="dayhead"><h2>${esc(title)}</h2><span class="tz">${plural(day.new, "new alert")}</span>` +
+    `<div class="nav"><button type="button" id="prev" ${i < days.length - 1 ? "" : "disabled"}>Earlier day</button>` +
+    `<button type="button" id="next" ${i > 0 ? "" : "disabled"}>Later day</button></div></div>` +
+    (notice ? `<p class="notice">${esc(notice)}</p>` : "") +
+    `<ul class="runs">${runs}</ul><div id="reports"></div>` +
+    `<p class="rules">Alerts: transients discovered in the last ${MANIFEST.settings.window_days} days whose nearest NED-LVS galaxy ` +
+    `(within ${MANIFEST.settings.radius_arcmin}′ and ${MANIFEST.settings.max_kpc} kpc) gives ${MANIFEST.settings.m_min} &lt; M &lt; ${MANIFEST.settings.m_max}, ` +
+    `or lies closer than ${MANIFEST.settings.nearby_mpc} Mpc. Each transient is reported once, on the day it first qualified.</p>`;
+  $("prev").onclick = () => show(days[i + 1].date);
+  $("next").onclick = () => show(days[i - 1].date);
+  const box = $("reports");
+  const withReports = day.runs.filter(r => r.report);
+  if (!withReports.length) {
+    box.innerHTML = '<div class="empty">No new alerts on this day.</div>';
+    return;
+  }
+  for (const r of withReports.slice().reverse()) {
+    const fig = document.createElement("section"); fig.className = "report";
+    fig.innerHTML = `<div class="cap"><b>Report from the ${esc(r.local)} HST run</b><span>${plural(r.new || 0, "new alert")}</span>` +
+      `<span class="spacer"></span><button class="linkbtn" type="button" style="color:var(--muted)">Open in new tab</button></div>` +
+      `<p class="status" style="padding:20px">Decrypting…</p>`;
+    box.appendChild(fig);
+    try {
+      let doc = await getFile(r.report);
+      if (CURRENT !== date) return;
+      doc = doc.replace(/<head>/i, '<head><base target="_blank"><style>' +
+        'body{max-width:none !important;margin:0 !important;padding:6px 18px 18px !important}' +
+        'body>h1{display:none}table{display:block;overflow-x:auto}' +
+        'td:first-child .small:first-of-type,td:first-child br:first-of-type{display:none}</style>');
+      const fr = document.createElement("iframe");
+      fr.title = "Alert report, " + date + " " + r.local + " HST";
+      fr.setAttribute("sandbox", "allow-same-origin allow-popups allow-popups-to-escape-sandbox");
+      fr.srcdoc = doc;
+      fr.onload = () => { try { fr.style.height = (fr.contentDocument.documentElement.scrollHeight + 4) + "px"; } catch (e) {} };
+      fig.querySelector(".status").replaceWith(fr);
+      fig.querySelector(".linkbtn").onclick = () => {
+        const url = URL.createObjectURL(new Blob([doc], {type: "text/html"}));
+        window.open(url, "_blank", "noopener");
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+      };
+    } catch (e) {
+      fig.querySelector(".status").textContent = "This report could not be decrypted: " + e.message;
+    }
+  }
+}
+window.addEventListener("resize", () => {
+  for (const fr of document.querySelectorAll(".report iframe")) {
+    try { fr.style.height = (fr.contentDocument.documentElement.scrollHeight + 4) + "px"; } catch (e) {}
+  }
+});
+
+/* ---------- boot ---------- */
+(async () => {
+  if (!window.crypto || !crypto.subtle) {
+    $("login").hidden = false;
+    $("err").textContent = "This browser can't decrypt the reports. Open the site over https in a current browser.";
+    return;
+  }
+  const saved = sessionStorage.getItem("yssf-key");
+  if (saved) {
+    try { await useKey(b64d(saved)); await start(); return; }
+    catch (e) { sessionStorage.removeItem("yssf-key"); }
+  }
+  $("login").hidden = false; $("u").focus();
+})();
+</script>
+</body>
+</html>
