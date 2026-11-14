@@ -79,6 +79,7 @@ main{max-width:1440px;margin:0 auto;padding:22px 20px 60px}
 .runs{list-style:none;padding:0;margin:.6rem 0 1.4rem;color:var(--muted);font-size:.95rem}
 .runs li{padding:.15rem 0}
 .runs b{color:var(--ink)}
+.runs .warn{color:#7a5200;background:#fff3d6;border-radius:4px;padding:1px 6px}
 .report{margin:0 0 28px;border:1px solid var(--line);border-radius:8px;background:#fff;overflow:hidden}
 .report .cap{padding:.55rem .9rem;border-bottom:1px solid var(--line);font-size:.9rem;color:var(--muted);
   display:flex;gap:12px;align-items:baseline}
@@ -264,7 +265,8 @@ async function show(date) {
     bits.push(plural(r.new || 0, "new alert"));
     if (r.reasons) bits.push(`skipped: ${r.reasons["no host"]} no galaxy within ${MANIFEST.settings.radius_arcmin}′, ` +
       `${r.reasons["too far"]} beyond ${MANIFEST.settings.max_kpc} kpc, ${r.reasons["magnitude"]} outside the magnitude range`);
-    return `<li>Run at <b>${esc(r.local)} HST</b>: ${bits.map(esc).join("; ")}</li>`;
+    const warn = (r.warnings || []).map(w => `<br><span class="warn">Incomplete check: ${esc(w)}.</span>`).join("");
+    return `<li>Run at <b>${esc(r.local)} HST</b>: ${bits.map(esc).join("; ")}${warn}</li>`;
   }).join("");
   main.innerHTML =
     `<div class="dayhead"><h2>${esc(title)}</h2><span class="tz">${plural(day.new, "new alert")}</span>` +
