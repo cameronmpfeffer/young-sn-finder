@@ -222,7 +222,9 @@ function buildNav() {
     b.type = "button"; b.className = "day " + (d.new ? "has" : "none"); b.dataset.date = d.date;
     b.innerHTML = `<span class="wd">${fmt(d.date, {weekday: "short"})}</span><span class="dn">${fmt(d.date, {day: "numeric"})}</span>` +
       `<span class="n">${d.new ? d.new : "–"}</span><span class="pip"></span>`;
-    b.setAttribute("aria-label", fmt(d.date, {weekday: "long", day: "numeric", month: "long"}) + ", " + plural(d.new, "new alert"));
+    b.setAttribute("aria-label", fmt(d.date, {weekday: "long", day: "numeric", month: "long"}) + ", " + plural(d.new, "new alert") +
+      ", " + (d.classified || 0) + " newly classified");
+    b.title = plural(d.new, "new alert") + ", " + (d.classified || 0) + " newly classified";
     b.addEventListener("click", () => show(d.date));
     strip.appendChild(b);
   }
@@ -263,31 +265,33 @@ async function show(date) {
     const bits = [];
     if (r.checked != null) bits.push(plural(r.checked, "transient") + " checked");
     bits.push(plural(r.new || 0, "new alert"));
+    if (r.classified != null) bits.push(r.classified + " newly classified");
     if (r.reasons) bits.push(`skipped: ${r.reasons["no host"]} no galaxy within ${MANIFEST.settings.radius_arcmin}′, ` +
       `${r.reasons["too far"]} beyond ${MANIFEST.settings.max_kpc} kpc, ${r.reasons["magnitude"]} outside the magnitude range`);
     const warn = (r.warnings || []).map(w => `<br><span class="warn">Incomplete check: ${esc(w)}.</span>`).join("");
     return `<li>Run at <b>${esc(r.local)} HST</b>: ${bits.map(esc).join("; ")}${warn}</li>`;
   }).join("");
   main.innerHTML =
-    `<div class="dayhead"><h2>${esc(title)}</h2><span class="tz">${plural(day.new, "new alert")}</span>` +
+    `<div class="dayhead"><h2>${esc(title)}</h2><span class="tz">${plural(day.new, "new alert")}, ${day.classified || 0} newly classified</span>` +
     `<div class="nav"><button type="button" id="prev" ${i < days.length - 1 ? "" : "disabled"}>Earlier day</button>` +
     `<button type="button" id="next" ${i > 0 ? "" : "disabled"}>Later day</button></div></div>` +
     (notice ? `<p class="notice">${esc(notice)}</p>` : "") +
     `<ul class="runs">${runs}</ul><div id="reports"></div>` +
     `<p class="rules">Alerts: transients discovered in the last ${MANIFEST.settings.window_days} days whose nearest NED-LVS galaxy ` +
     `(within ${MANIFEST.settings.radius_arcmin}′ and ${MANIFEST.settings.max_kpc} kpc) gives ${MANIFEST.settings.m_min} &lt; M &lt; ${MANIFEST.settings.m_max}, ` +
-    `or lies closer than ${MANIFEST.settings.nearby_mpc} Mpc. Each transient is reported once, on the day it first qualified.</p>`;
+    `or lies closer than ${MANIFEST.settings.nearby_mpc} Mpc. Each transient is reported once, on the day it first qualified. ` +
+    `Below the alerts, each report lists every object newly classified (or reclassified) on TNS since the previous run, unfiltered.</p>`;
   $("prev").onclick = () => show(days[i + 1].date);
   $("next").onclick = () => show(days[i - 1].date);
   const box = $("reports");
   const withReports = day.runs.filter(r => r.report);
   if (!withReports.length) {
-    box.innerHTML = '<div class="empty">No new alerts on this day.</div>';
+    box.innerHTML = '<div class="empty">No new alerts or classifications on this day.</div>';
     return;
   }
   for (const r of withReports.slice().reverse()) {
     const fig = document.createElement("section"); fig.className = "report";
-    fig.innerHTML = `<div class="cap"><b>Report from the ${esc(r.local)} HST run</b><span>${plural(r.new || 0, "new alert")}</span>` +
+    fig.innerHTML = `<div class="cap"><b>Report from the ${esc(r.local)} HST run</b><span>${plural(r.new || 0, "new alert")}, ${r.classified || 0} newly classified</span>` +
       `<span class="spacer"></span><button class="linkbtn" type="button" style="color:var(--muted)">Open in new tab</button></div>` +
       `<p class="status" style="padding:20px">Decrypting…</p>`;
     box.appendChild(fig);
